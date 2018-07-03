@@ -13,7 +13,7 @@
 
 #if defined(__ICCARM__)
 #pragma data_alignment=32
-static uint8_t user_frame_buffer[2][FRAME_BUFFER_STRIDE * FRAME_BUFFER_HEIGHT]@ ".mirrorram";
+static uint8_t user_frame_buffer[2][FRAME_BUFFER_STRIDE * FRAME_BUFFER_HEIGHT];
 #pragma data_alignment=32
 static uint8_t JpegBuffer[1024 * 64]@ ".mirrorram";
 #else
@@ -30,7 +30,7 @@ static void JcuDecodeCallBackFunc(JPEG_Converter::jpeg_conv_error_t err_code) {
     frame_toggle ^= 1;
 }
 
-static void mov_video_callback(void) {
+static void MovCallBackFunc(void) {
     JPEG_Converter::bitmap_buff_info_t bitmap_buff_info;
     JPEG_Converter::decode_options_t   decode_options;
 
@@ -38,6 +38,7 @@ static void mov_video_callback(void) {
     bitmap_buff_info.height             = LCD_PIXEL_HEIGHT;
     bitmap_buff_info.format             = JPEG_Converter::WR_RD_YCbCr422;
     bitmap_buff_info.buffer_address     = (void *)user_frame_buffer[frame_toggle];
+    dcache_invalid(bitmap_buff_info.buffer_address, sizeof(user_frame_buffer[0]));
 
     decode_options.output_swapsetting   = JPEG_Converter::WR_RD_WRSWA_32_16_8BIT;
     decode_options.p_DecodeCallBackFunc = &JcuDecodeCallBackFunc;
@@ -107,7 +108,7 @@ int main() {
 #if MBED_CONF_APP_LCD
     EasyAttach_Init(Display);
     Start_LCD_Display();
-    EasyDec_Mov::attach(&mov_video_callback, JpegBuffer, sizeof(JpegBuffer));
+    EasyDec_Mov::attach(&MovCallBackFunc, JpegBuffer, sizeof(JpegBuffer));
 #endif
 
     // decoder setting
