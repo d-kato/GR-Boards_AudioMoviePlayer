@@ -84,7 +84,7 @@ static void Start_LCD_Display(void) {
     Display.Graphics_Start(DisplayBase::GRAPHICS_LAYER_0);
     frame_toggle ^= 1;
 
-    Thread::wait(50);
+    ThisThread::sleep_for(50);
     EasyAttach_LcdBacklight(true);
 }
 #endif // MBED_CONF_APP_LCD
